@@ -77,6 +77,22 @@ footer b{color:var(--emd)}
    <option value="2564" selected>25 to 64</option>
    <option value="65">65 or older</option>
   </select>
+  <div id="mfsLivedApartBox" class="hide">
+   <label>Did you live apart from your spouse for the last 6 months of 2026?</label>
+   <select id="mfsLivedApart">
+    <option value="no">No — lived together</option>
+    <option value="yes">Yes — lived apart last 6 months</option>
+   </select>
+   <p class="hint">If yes, you may qualify to claim the Child Tax Credit on a separate return.</p>
+  </div>
+  <div class="fgrp" style="margin-top:12px">
+   <label>Can you be claimed as a dependent on someone else's 2026 tax return?</label>
+   <select id="canBeClaimedDep">
+    <option value="no">No — I cannot be claimed</option>
+    <option value="yes">Yes — someone else can claim me</option>
+   </select>
+   <p class="hint">If yes, your standard deduction and credit eligibility will be restricted.</p>
+  </div>
   <div id="spouseAgeBox" class="hide">
    <label>Spouse's age on December 31, 2026</label>
    <select id="sp65"><option value="0">Under 65</option><option value="1">65 or older</option></select>
@@ -89,7 +105,9 @@ footer b{color:var(--emd)}
   <h2>Your income</h2><p class="sub">Use your W-2s and 1099s. Estimates are fine.</p>
   <label>W-2 wages <span class="hint">(Box 1, all jobs — include your tips and overtime)</span></label>
   <input type="number" id="wages" inputmode="decimal" placeholder="0">
-  <label>Federal tax withheld <span class="hint">(W-2 Box 2)</span></label>
+  <label>Social Security wages <span class="hint">(W-2 Box 3, all jobs — leave blank if same as Box 1)</span></label>
+  <input type="number" id="ssWages" inputmode="decimal" placeholder="0">
+  <label>Federal income tax withheld <span class="hint">(W-2 Box 2, 1099, etc. — NOT Social Security or Medicare)</span></label>
   <input type="number" id="withheld" inputmode="decimal" placeholder="0">
   <label>Self-employment / 1099 revenue <span class="hint">(hair, barber, nails, gig, business)</span></label>
   <input type="number" id="seRev" inputmode="decimal" placeholder="0">
@@ -114,6 +132,19 @@ footer b{color:var(--emd)}
   <input type="number" id="kids1723" inputmode="numeric" min="0" max="10" placeholder="0">
   <label>Other dependents <span class="hint">(parent, relative, adult child)</span></label>
   <input type="number" id="othDeps" inputmode="numeric" min="0" max="10" placeholder="0">
+  <div id="eitcQualBox" class="hide">
+   <label>Do your children meet ALL credit eligibility requirements?</label>
+   <p class="hint" style="margin-bottom:6px;">
+    &bull; Lived with you in the US for >6 months in 2026<br>
+    &bull; Have valid Social Security numbers<br>
+    &bull; Under 19, or full-time student under 24, or permanently disabled<br>
+    &bull; Related to you (child, stepchild, foster child, sibling, or descendant)
+   </p>
+   <select id="eitcChildQual">
+    <option value="yes">Yes — all requirements met</option>
+    <option value="no">No / Not sure</option>
+   </select>
+  </div>
   <label>Children under 13 or disabled dependents in paid care so you can work</label>
   <input type="number" id="careKids" inputmode="numeric" min="0" max="10" placeholder="0">
   <div id="careBox" class="hide">
@@ -130,16 +161,18 @@ footer b{color:var(--emd)}
  <!-- STEP 4 -->
  <div class="card step hide" id="s4">
   <h2>2026 tax law deductions</h2><p class="sub">New deductions from the One Big Beautiful Bill. These must be included in your W-2 wages above — don't add them on top.</p>
-  <label>Qualified tips <span class="hint">(already inside your wages — server, stylist, barber)</span></label>
+  <label>Qualified tips <span class="hint">(Only qualified tips shown on your W-2 or tip logs, already included in your wages above)</span></label>
   <input type="number" id="tips" inputmode="decimal" placeholder="0">
-  <label>Qualified overtime pay <span class="hint">(already inside your wages — only the extra "half")</span></label>
+  <label>Qualified overtime pay <span class="hint">(Only qualified overtime pay shown on your W-2, already included in your wages above)</span></label>
   <input type="number" id="ot" inputmode="decimal" placeholder="0">
-  <label>Car loan interest <span class="hint">(new US-assembled vehicle, loan taken after Dec 31, 2024)</span></label>
+  <label>Car loan interest <span class="hint">(Interest paid on a new US-assembled vehicle loan taken after Dec 31, 2024)</span></label>
   <input type="number" id="carInt" inputmode="decimal" placeholder="0">
   <label>Student loan interest paid <span class="hint">(up to $2,500)</span></label>
   <input type="number" id="slInt" inputmode="decimal" placeholder="0">
   <label>Traditional IRA contributions <span class="hint">(deductible amount, up to $7,500)</span></label>
   <input type="number" id="ira" inputmode="decimal" placeholder="0">
+  <label>Cash charitable contributions <span class="hint">(Direct cash donations to qualified charities, up to $1,000 / $2,000 MFJ for standard deduction filers)</span></label>
+  <input type="number" id="charityCash" inputmode="decimal" placeholder="0">
   <label>Itemized deductions <span class="hint">(leave blank to use the standard deduction)</span></label>
   <input type="number" id="itemized" inputmode="decimal" placeholder="0">
   <div class="nav"><button class="btn sec" onclick="go(3)">Back</button><button class="btn" onclick="go(5)">Next</button></div>
@@ -150,6 +183,22 @@ footer b{color:var(--emd)}
   <h2>Education costs</h2><p class="sub">For you, your spouse, or a dependent</p>
   <label>Tuition &amp; required fees paid in 2026</label>
   <input type="number" id="tuition" inputmode="decimal" placeholder="0">
+  <div id="aotcSupportBox" class="hide" style="margin-top:10px">
+   <label>If student is under 24, did they provide OVER HALF of their own support with earned income?</label>
+   <select id="aotcSelfSupport">
+    <option value="no">No (or student is a dependent)</option>
+    <option value="yes">Yes — student earned over half their own support</option>
+   </select>
+   <p class="hint">Students under 24 cannot receive the 40% refundable AOTC portion unless they provided >50% of their support via earned income.</p>
+  </div>
+  <div style="margin-top:12px">
+   <label>Did you receive Form 1095-A or advance premium tax credits from a Marketplace health plan in 2026?</label>
+   <select id="has1095A">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+   </select>
+   <p class="hint">Marketplace health plans require Form 8962 premium tax credit reconciliation.</p>
+  </div>
   <div id="eduBox" class="hide">
    <label>Student type</label>
    <select id="eduType">
@@ -170,7 +219,7 @@ footer b{color:var(--emd)}
    <table class="t" id="resTbl"></table>
    <div class="assume" id="resAssume"></div>
    <div class="tipbox" id="resTip"></div>
-   <div class="disc"><b>Important:</b> This is a preliminary estimate only. Refunds are not guaranteed. Actual results depend on verified taxpayer information and official IRS rules. This is not a substitute for preparing and filing an actual tax return. It does not include state taxes.</div>
+   <div class="disc"><b>Important:</b> This calculator provides a preliminary estimate of your 2026 federal income tax refund or balance due based on the information entered. Results are not guaranteed and may change based on additional income, deductions, credits, eligibility requirements, IRS calculations, and final tax documents. This calculator is not a substitute for professional tax preparation or advice. State tax refunds are not included.</div>
   </div>
 
   <div class="cta">
@@ -253,6 +302,17 @@ function go(k){
 $("status").addEventListener("change",function(){
  $("spouseAgeBox").classList.toggle("hide",this.value!=="mfj");
  $("spEarnedBox").classList.toggle("hide",this.value!=="mfj");
+ if($("mfsLivedApartBox")) $("mfsLivedApartBox").classList.toggle("hide",this.value!=="mfs");
+});
+function updateKidsQualBox(){
+ var k1=parseFloat($("kidsU17").value)||0;
+ var k2=parseFloat($("kids1723").value)||0;
+ if($("eitcQualBox")) $("eitcQualBox").classList.toggle("hide",(k1+k2)<=0);
+}
+$("kidsU17").addEventListener("input",updateKidsQualBox);
+$("kids1723").addEventListener("input",updateKidsQualBox);
+if($("eduType")) $("eduType").addEventListener("change",function(){
+ if($("aotcSupportBox")) $("aotcSupportBox").classList.toggle("hide",this.value!=="aotc");
 });
 $("careKids").addEventListener("input",function(){$("careBox").classList.toggle("hide",!(parseFloat(this.value)>0))});
 $("tuition").addEventListener("input",function(){$("eduBox").classList.toggle("hide",!(parseFloat(this.value)>0))});
@@ -260,24 +320,38 @@ $("tuition").addEventListener("input",function(){$("eduBox").classList.toggle("h
 var LAST={};
 function calc(){
  var s=$("status").value, mfj=(s==="mfj"), qss=(s==="qss");
+ var mfsLivedApart=(s==="mfs" && $("mfsLivedApart").value==="yes");
+ var canBeClaimedDep=($("canBeClaimedDep").value==="yes");
  var age=$("ageRange").value, sp65=$("sp65").value;
- var wages=n("wages"), withheld=n("withheld"), seRev=n("seRev"), seExp=n("seExp"), estPaid=n("estPaid");
- var other=n("otherInc"), inv=n("invInc");
- var kU17=Math.min(Math.round(n("kidsU17")),10), k1723=Math.min(Math.round(n("kids1723")),10), oDep=Math.min(Math.round(n("othDeps")),10);
- var careKids=Math.round(n("careKids")), careAmt=n("careAmt"), spEarned=n("spEarned");
- var tips=n("tips"), ot=n("ot"), carInt=n("carInt"), slInt=n("slInt"), ira=n("ira"), itemized=n("itemized");
- var tuition=n("tuition"), eduType=$("eduType").value;
 
- // --- self-employment ---
- var seNet=Math.max(0,seRev-seExp), seBase=seNet*0.9235, seTax=0;
+ var wages=n("wages"), withheld=n("withheld"), seRev=n("seRev"), seExp=n("seExp"), estPaid=n("estPaid");
+ var ssWages=($("ssWages") && $("ssWages").value!=="")?n("ssWages"):wages;
+ var other=n("otherInc"), inv=n("invInc");
+
+ var kU17=Math.min(Math.round(n("kidsU17")),10);
+ var k1723=Math.min(Math.round(n("kids1723")),10);
+ var oDep=Math.min(Math.round(n("othDeps")),10);
+ var eitcChildQual=($("eitcChildQual")?$("eitcChildQual").value:"yes")==="yes";
+
+ var careKids=Math.round(n("careKids")), careAmt=n("careAmt"), spEarned=n("spEarned");
+ var tips=n("tips"), ot=n("ot"), carInt=n("carInt"), slInt=n("slInt"), ira=n("ira");
+ var charityCash=n("charityCash"), itemized=n("itemized");
+ var tuition=n("tuition"), eduType=$("eduType").value;
+ var aotcSelfSupport=($("aotcSelfSupport")?$("aotcSelfSupport").value:"no")==="yes";
+ var has1095A=($("has1095A")?$("has1095A").value:"no")==="yes";
+
+ // --- self-employment (loss preservation) ---
+ var seNet=seRev-seExp;
+ var seBase=0, seTax=0;
  if(seNet>=400){
-  var ssRoom=Math.max(0,SS_BASE-Math.min(wages,SS_BASE));
+  seBase=seNet*0.9235;
+  var ssRoom=Math.max(0,SS_BASE-Math.min(ssWages,SS_BASE));
   seTax=Math.min(seBase,ssRoom)*0.124+seBase*0.029;
  }
  var addlThr=mfj?250000:(s==="mfs"?125000:200000);
  var addlMed=Math.max(0,wages+seBase-addlThr)*0.009;
  var halfSE=seTax/2;
- var earned=wages+seBase;
+ var earned=wages+(seNet>0?seBase:0);
  var grossInc=wages+seNet+other+inv;
 
  // --- student loan interest (MFS excluded) ---
@@ -287,59 +361,89 @@ function calc(){
   var slo=mfj?175000:85000, shi=mfj?205000:100000, slm=grossInc-halfSE;
   if(slm>=shi)slD=0; else if(slm>slo)slD*=1-(slm-slo)/(shi-slo);
  }
+
  // --- IRA (cap $7,500 and earned income) ---
- var iraD=Math.min(ira,7500,earned);
+ var iraD=Math.min(ira,7500,Math.max(0,earned));
 
- // --- MAGI approximation for the four OBBBA deduction phaseouts ---
- var magiNew=grossInc-halfSE-slD-iraD;
- var jointPO=(mfj||qss)?300000:150000;
- // tips: $25,000 cap, -$100 per $1,000 over $150k/$300k, must file jointly if married
- var tipsD=0;
- if(s!=="mfs"&&tips>0)tipsD=Math.max(0,Math.min(tips,25000)-100*ceil0((magiNew-jointPO)/1000));
- // overtime: $12,500 cap ($25,000 joint), -$100 per $1,000, must file jointly if married
- var otD=0;
- if(s!=="mfs"&&ot>0)otD=Math.max(0,Math.min(ot,mfj?25000:12500)-100*ceil0((magiNew-jointPO)/1000));
- // car loan interest: $10,000 cap, -$200 per $1,000 over $100k/$200k
- var carPO=(mfj||qss)?200000:100000;
- var carD=0;
- if(carInt>0)carD=Math.max(0,Math.min(carInt,10000)-200*ceil0((magiNew-carPO)/1000));
- // senior deduction: $6,000 each 65+, -6% of MAGI over $75k/$150k (MFJ only for joint threshold)
+ // --- Cash Charitable Contribution Cap (above-the-line for std ded) ---
+ var charityCap=(mfj||qss)?2000:1000;
+ var charityD_allowed=Math.min(charityCash,charityCap);
+
+ // --- MAGI fixed-point iteration for the four OBBBA deduction phaseouts ---
+ var agiBase=grossInc-halfSE-slD-iraD;
  var seniors=(age==="65"?1:0)+((mfj&&sp65==="1")?1:0);
- var seniorD=0;
- if(seniors>0){
-  var sPO=mfj?150000:75000;
-  seniorD=Math.max(0,6000-0.06*Math.max(0,magiNew-sPO))*seniors;
- }
- var agi=grossInc-halfSE-slD-iraD-tipsD-otD-carD-seniorD;
+ var tipsD=0, otD=0, carD=0, seniorD=0;
 
- // --- standard deduction (with 65+ add-on) or itemized ---
+ for(var iter=0;iter<10;iter++){
+  var magiTips=agiBase-otD-carD-seniorD;
+  var poTips=(mfj||qss)?300000:150000;
+  tipsD=(s!=="mfs"&&tips>0)?Math.max(0,Math.min(tips,25000)-200*ceil0((magiTips-poTips)/1000)):0;
+
+  var magiOt=agiBase-tipsD-carD-seniorD;
+  var poOt=(mfj||qss)?300000:150000;
+  var otCap=mfj?25000:12500;
+  otD=(s!=="mfs"&&ot>0)?Math.max(0,Math.min(ot,otCap)-200*ceil0((magiOt-poOt)/1000)):0;
+
+  var magiCar=agiBase-tipsD-otD-seniorD;
+  var poCar=(mfj||qss)?200000:100000;
+  carD=(carInt>0)?Math.max(0,Math.min(carInt,10000)-200*ceil0((magiCar-poCar)/1000)):0;
+
+  var magiSr=agiBase-tipsD-otD-carD;
+  var poSr=(mfj||qss)?300000:150000;
+  var totSeniorMax=6000*seniors;
+  seniorD=(seniors>0)?Math.max(0,totSeniorMax-200*ceil0((magiSr-poSr)/1000)):0;
+ }
+
+ var agi=agiBase-tipsD-otD-carD-seniorD;
+
+ // --- standard deduction (with 65+ add-on and dependency restriction) or itemized ---
  var std=STD[s];
  if(seniors>0)std+=ADD65[s]*seniors;
+ if(canBeClaimedDep){
+  std=Math.min(std,Math.max(1650,Math.max(0,earned)+1500));
+ }
+
  var useItem=itemized>std;
  var ded=useItem?itemized:std;
+ var charityD=useItem?0:charityD_allowed;
+ if(!useItem&&charityD>0){
+  agi-=charityD;
+ }
+
  var preTI=Math.max(0,agi-ded);
 
- // --- QBI 20% pass-through (with $400 minimum when QBI >= $1,000) ---
+ // --- QBI 20% pass-through (with $400 minimum when QBI base >= $1,000) ---
  var qbi=0;
+ var qbiNote=false;
  if(seNet>0){
   var qbiBase=Math.max(0,seNet-halfSE);
   qbi=Math.min(0.20*qbiBase,0.20*preTI);
   if(qbiBase>=1000)qbi=Math.min(Math.max(qbi,400),preTI);
+  var qbiThr=mfj?383900:191950;
+  if(preTI>qbiThr)qbiNote=true;
  }
  var ti=Math.max(0,preTI-qbi);
  var incomeTax=taxTable(ti,s);
 
+ // --- Dependent Screening ---
+ var eff_kU17=canBeClaimedDep?0:kU17;
+ var eff_k1723=canBeClaimedDep?0:k1723;
+ var eff_oDep=canBeClaimedDep?0:oDep;
+
  // --- CTC / ODC ($2,200 + $500, phaseout $400k MFJ/QSS else $200k) ---
- var ctcKids=kU17*CTC, odc=(k1723+oDep)*ODC;
+ var ctcKids=eff_kU17*CTC, odc=(eff_k1723+eff_oDep)*ODC;
  var ctcPO=(mfj||qss)?400000:200000;
  var ctcRed=50*ceil0((agi-ctcPO)/1000);
  var ctcTotal=Math.max(0,ctcKids+odc-ctcRed);
+ if(s==="mfs" && !mfsLivedApart){
+  ctcTotal=0;
+ }
 
  // --- Child & Dependent Care Credit (26 USC 21) ---
  var careCr=0;
- if(careKids>0&&careAmt>0&&s!=="mfs"){
+ if(careKids>0&&careAmt>0&&s!=="mfs"&&!canBeClaimedDep){
   var cap=careKids>=2?6000:3000;
-  var elimit=mfj?Math.min(earned,spEarned):earned;
+  var elimit=mfj?Math.min(Math.max(0,earned),Math.max(0,spEarned)):Math.max(0,earned);
   var exp=Math.min(careAmt,cap,elimit);
   var pct=0.50-0.01*ceil0((agi-15000)/2000);
   pct=Math.max(0.35,pct);
@@ -348,15 +452,19 @@ function calc(){
   careCr=exp*pct;
  }
 
- // --- education credits (MFS excluded; AOTC 40% refundable) ---
+ // --- education credits (MFS excluded; AOTC 40% refundable subject to under-24 support test) ---
  var eduCr=0, eduRef=0;
- if(tuition>0&&s!=="mfs"){
+ if(tuition>0&&s!=="mfs"&&!canBeClaimedDep){
   var elo=mfj?160000:80000, ehi=mfj?180000:90000;
   var f=agi<=elo?1:(agi>=ehi?0:1-(agi-elo)/(ehi-elo));
   if(f>0){
    if(eduType==="aotc"){
     eduCr=(Math.min(tuition,2000)+Math.min(Math.max(0,tuition-2000),2000)*0.25)*f;
-    eduRef=eduCr*0.40;
+    if(aotcSelfSupport){
+     eduRef=eduCr*0.40;
+    }else{
+     eduRef=0;
+    }
    }else{
     eduCr=Math.min(tuition,10000)*0.20*f;
    }
@@ -369,19 +477,19 @@ function calc(){
  var eduUsed=Math.min(eduCr-eduRef,taxAfter); taxAfter-=eduUsed;
  var ctcUsed=Math.min(ctcTotal,taxAfter); taxAfter-=ctcUsed;
 
- // --- Additional Child Tax Credit (refundable, MFS excluded) ---
+ // --- Additional Child Tax Credit (refundable, MFS excluded unless lived apart) ---
  var actc=0;
- if(kU17>0&&s!=="mfs"){
+ if(eff_kU17>0 && (s!=="mfs" || mfsLivedApart)){
   var ctcKidsNet=Math.max(0,ctcKids-ctcRed);
   var ctcUsedKids=Math.min(ctcUsed,ctcKidsNet);
   var remain=ctcKidsNet-ctcUsedKids;
-  actc=Math.max(0,Math.min(remain,kU17*CTC_REFUND,0.15*Math.max(0,earned-2500)));
+  actc=Math.max(0,Math.min(remain,eff_kU17*CTC_REFUND,0.15*Math.max(0,earned-2500)));
  }
 
  // --- EITC (Rev. Proc. 2025-32 table; QSS uses joint phaseouts; MFS excluded) ---
  var eitc=0, eitcWhy="";
- var qk=Math.min(kU17+k1723,3);
- if(s!=="mfs"&&inv<=INV_LIMIT&&earned>0){
+ var qk=eitcChildQual?Math.min(eff_kU17+eff_k1723,3):0;
+ if(s!=="mfs"&&!canBeClaimedDep&&inv<=INV_LIMIT&&earned>0){
   if(qk===0&&age!=="2564"){
    eitcWhy="age";
   }else{
@@ -401,14 +509,15 @@ function calc(){
 
  LAST={s:s,result:result,incomeTax:incomeTax,seTax:seTax+addlMed,agi:agi,ti:ti,
   ctc:ctcUsed+actc,care:careUsed,edu:eduUsed+eduRef,eitc:eitc,actc:actc,eduRef:eduRef,
-  payments:payments,tipsD:tipsD,otD:otD,carD:carD,seniorD:seniorD,slD:slD,iraD:iraD,qbi:qbi,
+  payments:payments,tipsD:tipsD,otD:otD,carD:carD,seniorD:seniorD,slD:slD,iraD:iraD,charityD:charityD,qbi:qbi,
   seNet:seNet,wages:wages,tuition:tuition,ded:ded,useItem:useItem,careAmt:careAmt,
-  nKids:kU17+k1723+oDep,hasTips:tips>0,hasOT:ot>0,ageRange:age};
+  nKids:eff_kU17+eff_k1723+eff_oDep,hasTips:tips>0,hasOT:ot>0,ageRange:age};
 
  var rows=[["Total income",money(grossInc)],["Adjusted gross income",money(agi)]];
  rows.push([useItem?"Itemized deductions":"Standard deduction (incl. any 65+ add-on)","-"+money(ded)]);
  if(slD>0)rows.push(["Student loan interest deduction","-"+money(slD)]);
  if(iraD>0)rows.push(["IRA contribution deduction","-"+money(iraD)]);
+ if(charityD>0)rows.push(["Cash charitable contributions deduction (new for 2026)","-"+money(charityD)]);
  if(tipsD>0)rows.push(["Qualified tips deduction (new for 2026)","-"+money(tipsD)]);
  if(otD>0)rows.push(["Qualified overtime deduction (new for 2026)","-"+money(otD)]);
  if(carD>0)rows.push(["Car loan interest deduction (new for 2026)","-"+money(carD)]);
@@ -429,7 +538,10 @@ function calc(){
  $("resLbl").textContent=result>=0?"Your estimated federal refund":"Your estimated amount owed";
  var big=$("resBig");big.textContent=money(Math.abs(result));big.className="big "+(result>=0?"ref":"owe");
 
- var assumptions="Assumes children listed have Social Security numbers and lived with you more than half of 2026.";
+ var assumptions="Assumes information entered is complete and accurate for tax year 2026 (returns filed in 2027).";
+ if(has1095A)assumptions+=" ⚠️ NOTICE: You indicated receiving Form 1095-A / Marketplace insurance. This estimate does not account for Premium Tax Credit reconciliation. Results require professional review — please contact Destiny Helpers Tax Services LLC.";
+ if(qbiNote)assumptions+=" ⚠️ High income self-employment: QBI limits/SSTB rules may apply; professional review recommended.";
+ if(inv>50000)assumptions+=" ⚠️ High investment income: Complex capital gains or Net Investment Income Tax (NIIT) rules may apply.";
  if(eitcWhy==="age")assumptions+=" Earned Income Credit not included: the credit for workers without children requires age 25 to 64.";
  if(mfj&&careKids>0&&careAmt>0&&spEarned<=0)assumptions+=" Child care credit not included: both spouses need work income.";
  if(s==="mfs")assumptions+=" Married Filing Separately limits several credits; a joint return may produce a better result.";
@@ -442,60 +554,30 @@ function calc(){
  else tipTxt="A bigger refund isn't always better — it means you gave the IRS an interest-free loan. A pro can help you balance withholding.";
  $("resTip").innerHTML="<b>Heads up:</b> "+tipTxt;
 
- var tips=[
+ var tipsArr=[
   "Keep every receipt for business expenses. Mileage, supplies, and booth rent add up fast.",
   "Tips and overtime can now be deducted. Keep pay stubs and a tip log all year.",
   "Direct deposit with e-file is the fastest way to get your refund.",
   "Review your W-4 each year, especially after a life change like marriage, a new baby, or a second job.",
   "Self-employed? Set aside 25-30% of each payment for taxes."
  ];
- $("tip").textContent=tips[Math.floor(Math.random()*tips.length)];
+ $("tip").textContent=tipsArr[Math.floor(Math.random()*tipsArr.length)];
 
  var c=["Photo ID for you (and spouse, if filing jointly)","Social Security cards or ITIN letters for everyone on the return","All W-2 forms from every employer"];
  if(seRev>0){c.push("1099-NEC / 1099-K forms and income records");c.push("Business expense records, receipts, and mileage log")}
  if(LAST.nKids>0){c.push("Children's Social Security numbers and birth dates");c.push("Daycare / childcare provider name, address, and tax ID")}
  if(tuition>0)c.push("Form 1098-T from the school");
- if(slInt>0)c.push("Form 1098-E (student loan interest)");
- if(carInt>0)c.push("Vehicle loan interest statement and VIN");
- if(tips>0||ot>0)c.push("Pay stubs showing tips and overtime");
- if(itemized>0)c.push("Receipts for mortgage interest, property tax, and charitable gifts");
- c.push("Last year's tax return (if you have it)");
- c.push("Bank routing and account number for direct deposit");
- var ch="";for(var j=0;j<c.length;j++)ch+="<li>"+c[j]+"</li>";
- $("chk").innerHTML=ch;
+ if(slInt>0)c.push("Form 1098-E from your loan servicer");
+ if(has1095A)c.push("Form 1095-A from the Health Insurance Marketplace");
+ var ch="";
+ for(var j=0;j<c.length;j++)ch+="<li>"+c[j]+"</li>";
+ $("resCheck").innerHTML=ch;
 
- var steps=document.querySelectorAll(".step");
- for(var q=0;q<steps.length;q++)steps[q].classList.add("hide");
+ var ctaText=result<0?"Owing money can be stressful, but you have options. Destiny Helpers Tax Services LLC can review your return to make sure you're taking every deduction you deserve.":"Want to make sure you get every dollar you're owed? Destiny Helpers Tax Services LLC can double-check this estimate, find extra credits, and e-file for you.";
+ $("ctaNote").textContent=ctaText;
+
  $("results").classList.remove("hide");
- $("pbar").style.width="100%";$("stepl").textContent="Complete";
- window.scrollTo({top:$("pbar").offsetTop-10,behavior:"smooth"});
-}
-
-document.addEventListener("DOMContentLoaded",function(){
- $("ctaVip").href=VIP_URL;$("ctaAppt").href=VIP_URL;$("ctaContact").href=CONTACT_URL;
-});
-
-function emailEst(){
- var r=LAST.result;
- var body="Destiny Helpers Tax Services LLC - 2026 Federal Tax Estimate\n\n"+
-  (r>=0?"Estimated refund: ":"Estimated amount owed: ")+money(Math.abs(r))+"\n"+
-  "Taxable income: "+money(LAST.ti)+"\nIncome tax: "+money(LAST.incomeTax)+"\n"+
-  (LAST.seTax>0?"Self-employment tax: "+money(LAST.seTax)+"\n":"")+
-  (LAST.eitc>0?"Earned Income Tax Credit: "+money(LAST.eitc)+"\n":"")+
-  "\nThis is a preliminary estimate only, not a filed return or guaranteed refund.\n\nJoin the 2027 VIP Waitlist: "+VIP_URL;
- location.href="mailto:?subject="+encodeURIComponent("My 2026 Tax Estimate - Destiny Helpers Tax Services LLC")+"&body="+encodeURIComponent(body);
-}
-function shareCalc(){
- var u=location.href.split("#")[0];
- var t="Try this free 2026 tax refund calculator from Destiny Helpers Tax Services LLC";
- if(navigator.share){navigator.share({title:t,text:t,url:u}).catch(function(){})}
- else{if(navigator.clipboard)navigator.clipboard.writeText(u);alert("Link copied. Paste it anywhere to share.")}
-}
-function restart(){
- var f=document.querySelectorAll("input[type=number]");for(var i=0;i<f.length;i++)f[i].value="";
- go(1);
-}
-go(1);
-</script>
+ window.scrollTo({top:$("results").offsetTop-10,behavior:"smooth"});
+}</script>
 </body>
 </html>
